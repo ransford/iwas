@@ -14,6 +14,7 @@ import (
 
 func init() {
 	rootCmd.AddCommand(policiesCmd)
+	policiesCmd.Flags().BoolVar(&allPolicies, "all", false, "Show all policies, including AWS managed")
 }
 
 var policiesCmd = &cobra.Command{
@@ -23,6 +24,8 @@ var policiesCmd = &cobra.Command{
 		return showPolicies()
 	},
 }
+
+var allPolicies bool
 
 func showPolicies() error {
 	// Load the Shared AWS Configuration (~/.aws/config)
@@ -34,11 +37,15 @@ func showPolicies() error {
 	client := iam.NewFromConfig(cfg)
 
 	// List policies
+	listPoliciesInput := &iam.ListPoliciesInput{
+		Scope: "Local",
+	}
+	if allPolicies {
+		listPoliciesInput.Scope = "All"
+	}
 	policies, err := client.ListPolicies(
 		context.Background(),
-		&iam.ListPoliciesInput{
-			Scope: "Local",
-		},
+		listPoliciesInput,
 	)
 	if err != nil {
 		return err
