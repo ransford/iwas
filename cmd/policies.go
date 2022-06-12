@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -20,16 +19,16 @@ func init() {
 var policiesCmd = &cobra.Command{
 	Use:   "policies",
 	Short: "List IAM policies",
-	Run: func(cmd *cobra.Command, args []string) {
-		showPolicies()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return showPolicies()
 	},
 }
 
-func showPolicies() {
+func showPolicies() error {
 	// Load the Shared AWS Configuration (~/.aws/config)
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	client := iam.NewFromConfig(cfg)
@@ -42,7 +41,7 @@ func showPolicies() {
 		},
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	pols := []string{}
 	for _, pol := range policies.Policies {
@@ -52,4 +51,6 @@ func showPolicies() {
 	for _, pol := range pols {
 		fmt.Println(pol)
 	}
+
+	return nil
 }
