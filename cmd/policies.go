@@ -52,7 +52,7 @@ func showPolicies() error {
 	}
 	pols := []string{}
 	for _, pol := range policies.Policies {
-		pols = append(pols, aws.ToString(pol.PolicyName))
+		pols = append(pols, aws.ToString(pol.Arn))
 	}
 	sort.Strings(pols)
 	for _, pol := range pols {
