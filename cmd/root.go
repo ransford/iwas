@@ -11,9 +11,6 @@ var rootCmd = &cobra.Command{
 	Use:   "iwas",
 	Short: "Versioned policy browser for AWS IAM policies",
 	Long:  "",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("hi")
-	},
 }
 
 func Execute() {
