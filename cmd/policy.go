@@ -55,8 +55,8 @@ func getPolicyVersion(arn, version string) (string, error) {
 }
 
 func validVersion(v string) bool {
-	_, err := regexp.MatchString(`v[0-9]+`, v)
-	return err == nil
+	m, err := regexp.MatchString(`v[1-9][0-9]*`, v)
+	return err == nil && m
 }
 
 var policyCmd = &cobra.Command{
