@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -59,6 +61,12 @@ func validVersion(v string) bool {
 	return err == nil && m
 }
 
+func prettyPrintPolicy(pol string) {
+	var pretty bytes.Buffer
+	json.Indent(&pretty, []byte(pol), "", "  ")
+	fmt.Println(pretty.String())
+}
+
 var policyCmd = &cobra.Command{
 	Use:     "policy <arn> [version]",
 	Aliases: []string{"get"},
@@ -95,7 +103,7 @@ var policyCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Println(pol)
+		prettyPrintPolicy(pol)
 		return nil
 	},
 }
