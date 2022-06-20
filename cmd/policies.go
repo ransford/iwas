@@ -18,8 +18,9 @@ func init() {
 }
 
 var policiesCmd = &cobra.Command{
-	Use:   "policies",
-	Short: "List IAM policies",
+	Use:     "policies",
+	Aliases: []string{"list"},
+	Short:   "List IAM policies",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return showPolicies()
 	},
