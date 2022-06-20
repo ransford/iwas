@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	"github.com/spf13/cobra"
@@ -29,14 +28,6 @@ var policiesCmd = &cobra.Command{
 var allPolicies bool
 
 func showPolicies() error {
-	// Load the Shared AWS Configuration (~/.aws/config)
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return err
-	}
-
-	client := iam.NewFromConfig(cfg)
-
 	// List policies
 	listPoliciesInput := &iam.ListPoliciesInput{
 		Scope: "Local",
@@ -44,7 +35,7 @@ func showPolicies() error {
 	if allPolicies {
 		listPoliciesInput.Scope = "All"
 	}
-	policies, err := client.ListPolicies(
+	policies, err := iamClient.ListPolicies(
 		context.Background(),
 		listPoliciesInput,
 	)
