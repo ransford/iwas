@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -27,11 +29,13 @@ const IAM_REGION = "us-east-1"
 // PolicyNameToArn converts a policy name to an ARN.
 func PolicyNameToArn(pol string) (arn.ARN, error) {
 	if a, err := arn.Parse(pol); err == nil {
+		log.Debugf("Parsed input ARN: %s", a.String())
 		if a.Service == "iam" && strings.HasPrefix(a.Resource, "policy/") {
 			return a, nil
 		}
 		return arn.ARN{}, errors.New("not an IAM policy ARN")
 	}
+	log.Debug("Input was not an ARN")
 
 	// Error was non-nil, so not a valid ARN; construct one by interpreting pol as the name of a
 	// policy resource within the current account
@@ -47,12 +51,15 @@ func PolicyNameToArn(pol string) (arn.ARN, error) {
 	if err != nil {
 		return arn.ARN{}, err
 	}
+	log.Debugf("Identity: %s", *out.Arn)
 
-	return arn.ARN{
+	ret := arn.ARN{
 		Partition: "aws",
 		Service:   "iam",
 		Region:    "",
 		AccountID: *out.Account,
 		Resource:  fmt.Sprintf("policy/%s", pol),
-	}, nil
+	}
+	log.Debugf("Output ARN: %s", ret.String())
+	return ret, nil
 }

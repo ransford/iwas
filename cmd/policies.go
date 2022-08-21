@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
@@ -20,6 +21,7 @@ var policiesCmd = &cobra.Command{
 	Use:     "policies",
 	Aliases: []string{"list"},
 	Short:   "List IAM policies",
+	PreRun:  setLogLevel,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return showPolicies()
 	},
@@ -35,6 +37,7 @@ func showPolicies() error {
 	if allPolicies {
 		listPoliciesInput.Scope = "All"
 	}
+	log.Debug("Listing policies")
 	policies, err := iamClient.ListPolicies(
 		context.Background(),
 		listPoliciesInput,
@@ -42,6 +45,7 @@ func showPolicies() error {
 	if err != nil {
 		return err
 	}
+	log.Debugf("Listed %d policies", len(policies.Policies))
 	pols := []string{}
 	for _, pol := range policies.Policies {
 		pols = append(pols, aws.ToString(pol.Arn))

@@ -29,10 +29,11 @@ func init() {
 	iamClient = iam.NewFromConfig(cfg)
 }
 
-func getPolicyVersion(arn, version string) (string, error) {
+func getPolicyVersion(a arn.ARN, version string) (string, error) {
+	ars := a.String()
 	if version == "" {
 		getPolicyInput := iam.GetPolicyInput{
-			PolicyArn: &arn,
+			PolicyArn: &ars,
 		}
 		pol, err := iamClient.GetPolicy(context.Background(), &getPolicyInput)
 		if err != nil {
@@ -42,7 +43,7 @@ func getPolicyVersion(arn, version string) (string, error) {
 	}
 
 	getPolicyVersionInput := iam.GetPolicyVersionInput{
-		PolicyArn: &arn,
+		PolicyArn: &ars,
 		VersionId: &version,
 	}
 	cur, err := iamClient.GetPolicyVersion(context.Background(), &getPolicyVersionInput)
@@ -94,6 +95,7 @@ var policyCmd = &cobra.Command{
 
 		return errors.New("wrong number of arguments")
 	},
+	PreRun: setLogLevel,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var a arn.ARN
 		var err error
@@ -104,7 +106,7 @@ var policyCmd = &cobra.Command{
 		if len(args) == 2 {
 			version = args[1]
 		}
-		pol, err := getPolicyVersion(a.String(), version)
+		pol, err := getPolicyVersion(a, version)
 		if err != nil {
 			return err
 		}
