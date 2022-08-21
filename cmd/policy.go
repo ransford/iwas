@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/ransford/iwas/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -74,7 +75,7 @@ var policyCmd = &cobra.Command{
 	Args: func(cmd *cobra.Command, args []string) error {
 		// ARN only
 		if len(args) == 1 {
-			if _, err := arn.Parse(args[0]); err != nil {
+			if _, err := internal.PolicyNameToArn(args[0]); err != nil {
 				return err
 			}
 			return nil
@@ -82,7 +83,7 @@ var policyCmd = &cobra.Command{
 
 		// ARN and version
 		if len(args) == 2 {
-			if _, err := arn.Parse(args[0]); err != nil {
+			if _, err := internal.PolicyNameToArn(args[0]); err != nil {
 				return err
 			}
 			if !validVersion(args[1]) {
@@ -94,12 +95,16 @@ var policyCmd = &cobra.Command{
 		return errors.New("wrong number of arguments")
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		arn := args[0]
+		var a arn.ARN
+		var err error
+		if a, err = internal.PolicyNameToArn(args[0]); err != nil {
+			return err
+		}
 		version := ""
 		if len(args) == 2 {
 			version = args[1]
 		}
-		pol, err := getPolicyVersion(arn, version)
+		pol, err := getPolicyVersion(a.String(), version)
 		if err != nil {
 			return err
 		}
