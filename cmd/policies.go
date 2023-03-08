@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -38,22 +37,23 @@ func showPolicies() error {
 		listPoliciesInput.Scope = "All"
 	}
 	log.Debug("Listing policies")
-	policies, err := iamClient.ListPolicies(
-		context.Background(),
-		listPoliciesInput,
-	)
-	if err != nil {
-		return err
+
+	paginator := iam.NewListPoliciesPaginator(iamClient, listPoliciesInput, func(o *iam.ListPoliciesPaginatorOptions) {
+		o.Limit = 100
+	})
+
+	numPolicies := 0
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(context.TODO())
+		if err != nil {
+			return err
+		}
+		for _, pol := range output.Policies {
+			fmt.Println(aws.ToString(pol.Arn))
+			numPolicies += 1
+		}
 	}
-	log.Debugf("Listed %d policies", len(policies.Policies))
-	pols := []string{}
-	for _, pol := range policies.Policies {
-		pols = append(pols, aws.ToString(pol.Arn))
-	}
-	sort.Strings(pols)
-	for _, pol := range pols {
-		fmt.Println(pol)
-	}
+	log.Debugf("Listed %d policies", numPolicies)
 
 	return nil
 }
