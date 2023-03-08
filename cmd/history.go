@@ -8,13 +8,12 @@ import (
 	"github.com/ransford/iwas/internal"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/spf13/cobra"
 )
 
-func getPolicyHistory(a arn.ARN) error {
-	ars := a.String()
+func (p *Policy) PrintHistory() error {
+	ars := p.arn.String()
 	getPolicyInput := iam.GetPolicyInput{
 		PolicyArn: &ars,
 	}
@@ -28,7 +27,7 @@ func getPolicyHistory(a arn.ARN) error {
 	}
 	for i := ver; i >= 1; i-- {
 		log.Debugf("Getting policy version %d", i)
-		doc, err := getPolicyVersion(a, fmt.Sprintf("v%d", i))
+		doc, err := p.GetVersion(fmt.Sprintf("v%d", i))
 		if err != nil {
 			return err
 		}
@@ -54,7 +53,8 @@ var historyCmd = &cobra.Command{
 	PreRun: setLogLevel,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		parn, _ := internal.PolicyNameToArn(args[0])
-		return getPolicyHistory(parn)
+		pol := &Policy{parn}
+		return pol.PrintHistory()
 	},
 }
 
