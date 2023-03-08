@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/ransford/iwas/internal"
 	log "github.com/sirupsen/logrus"
@@ -12,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (p *Policy) PrintHistory() error {
+func (p *Policy) PrintHistory(since time.Time) error {
 	ars := p.arn.String()
 	getPolicyInput := iam.GetPolicyInput{
 		PolicyArn: &ars,
@@ -41,23 +42,35 @@ var historyCmd = &cobra.Command{
 	Aliases: []string{"get"},
 	Short:   "Show all versions of an IAM policy",
 	Args: func(cmd *cobra.Command, args []string) error {
-		// ARN only
-		if len(args) == 1 {
-			if _, err := internal.PolicyNameToArn(args[0]); err != nil {
+		if len(args) != 1 {
+			return errors.New("wrong number of arguments")
+		}
+		if _, err := internal.PolicyNameToArn(args[0]); err != nil {
+			return err
+		}
+
+		if sinceSpec != "" {
+			var err error
+			since, err = time.Parse("2023-12-01", sinceSpec)
+			if err != nil {
 				return err
 			}
-			return nil
 		}
-		return errors.New("wrong number of arguments")
+
+		return nil
 	},
 	PreRun: setLogLevel,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		parn, _ := internal.PolicyNameToArn(args[0])
 		pol := &Policy{parn}
-		return pol.PrintHistory()
+		return pol.PrintHistory(since)
 	},
 }
 
+var sinceSpec string
+var since time.Time
+
 func init() {
 	rootCmd.AddCommand(historyCmd)
+	historyCmd.Flags().StringVar(&sinceSpec, "since", "", "Date in YYYY-MM-DD")
 }
