@@ -58,7 +58,6 @@ func (p *Policy) GetVersion(version string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf("// %s\n", version)
 	return doc, nil
 }
 
@@ -67,9 +66,9 @@ func validVersion(v string) bool {
 	return err == nil && m
 }
 
-func prettyPrintPolicy(pol string) {
+func prettyPrintJson(js string) {
 	var pretty bytes.Buffer
-	json.Indent(&pretty, []byte(pol), "", "  ")
+	json.Indent(&pretty, []byte(js), "", "  ")
 	fmt.Println(pretty.String())
 }
 
@@ -115,7 +114,7 @@ var policyCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		prettyPrintPolicy(pol)
+		prettyPrintJson(pol)
 		return nil
 	},
 }
