@@ -20,7 +20,9 @@ import (
 var iamClient *iam.Client
 
 type Policy struct {
-	arn arn.ARN
+	Arn     arn.ARN
+	Version string
+	Doc     string
 }
 
 func init() {
@@ -34,7 +36,7 @@ func init() {
 }
 
 func (p *Policy) GetVersion(version string) (string, error) {
-	ars := p.arn.String()
+	ars := p.Arn.String()
 	if version == "" {
 		getPolicyInput := iam.GetPolicyInput{
 			PolicyArn: &ars,
@@ -109,7 +111,7 @@ var policyCmd = &cobra.Command{
 		if len(args) == 2 {
 			version = args[1]
 		}
-		policy := &Policy{a}
+		policy := &Policy{a, version}
 		pol, err := policy.GetVersion(version)
 		if err != nil {
 			return err

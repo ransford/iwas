@@ -14,7 +14,7 @@ import (
 )
 
 func (p *Policy) PrintHistory(since time.Time) error {
-	ars := p.arn.String()
+	ars := p.Arn.String()
 	getPolicyInput := iam.GetPolicyInput{
 		PolicyArn: &ars,
 	}
@@ -28,7 +28,18 @@ func (p *Policy) PrintHistory(since time.Time) error {
 	}
 	for i := ver; i >= 1; i-- {
 		log.Debugf("Getting policy version %d", i)
+
+		// TODO: get policy object instead
 		doc, err := p.GetVersion(fmt.Sprintf("v%d", i))
+
+		if !since.IsZero() {
+			// 'since' specified a timestamp. the last modification before this timestamp -- the first
+			// policy version with a timestamp *earlier* than the 'since' timestamp in a backward
+			// search -- represents the policy as it was at the moment specified by 'since'.
+			if doc.Policy.Timestamp.Before(since) {
+				break
+			}
+		}
 		if err != nil {
 			return err
 		}
